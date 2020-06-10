@@ -5,11 +5,11 @@ let dynamo = new AWS.DynamoDB.DocumentClient();
 
 require('aws-sdk/clients/apigatewaymanagementapi'); 
 
-const CHATCONNECTION_TABLE = 'chatIdTable';
+const DDB_DOC = 'chat-messages-ws';
 
 const successfullResponse = {
   statusCode: 200,
-  body: 'everything is alright'
+  body: 'connected'
 };
 
 module.exports.connectionHandler = (event, context, callback) => {
@@ -35,7 +35,7 @@ module.exports.connectionHandler = (event, context, callback) => {
         console.log(err);
         callback(null, {
           statusCode: 500,
-          body: 'Failed to connect: ' + JSON.stringify(err)
+            body: 'error: ' + JSON.stringify(err)
         });
       });
   }
@@ -43,12 +43,9 @@ module.exports.connectionHandler = (event, context, callback) => {
 
 // THIS ONE DOESNT DO ANYHTING
 module.exports.defaultHandler = (event, context, callback) => {
-  console.log('defaultHandler was called');
-  console.log(event);
-
   callback(null, {
-    statusCode: 200,
-    body: 'defaultHandler'
+    statusCode: 400,
+    body: 'bad'
   });
 };
 
@@ -70,7 +67,7 @@ const sendMessageToAllConnected = (event) => {
 
 const getConnectionIds = () => {  
   const params = {
-    TableName: CHATCONNECTION_TABLE,
+    TableName: DDB_DOC,
     ProjectionExpression: 'connectionId'
   };
 
@@ -83,7 +80,7 @@ const send = (event, connectionId) => {
 
   const endpoint = event.requestContext.domainName + "/" + event.requestContext.stage;
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
-    apiVersion: "2018-11-29",
+    apiVersion: "2020-1",
     endpoint: endpoint
   });
 
@@ -96,7 +93,7 @@ const send = (event, connectionId) => {
 
 const addConnection = connectionId => {
   const params = {
-    TableName: CHATCONNECTION_TABLE,
+    TableName: DDB_DOC,
     Item: {
       connectionId: connectionId 
     }
@@ -107,7 +104,7 @@ const addConnection = connectionId => {
 
 const deleteConnection = connectionId => {
   const params = {
-    TableName: CHATCONNECTION_TABLE,
+    TableName: DDB_DOC,
     Key: {
       connectionId: connectionId 
     }

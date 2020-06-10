@@ -2,7 +2,7 @@ service: websockets-chat
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs12.x
 
   iamRoleStatements:
     - Effect: Allow
@@ -50,4 +50,4 @@ resources:
         - AttributeName: "connectionId"
           KeyType: "HASH"
         BillingMode: PAY_PER_REQUEST
-        TableName: chatIdTable
+        TableName: chat-messages-ws
